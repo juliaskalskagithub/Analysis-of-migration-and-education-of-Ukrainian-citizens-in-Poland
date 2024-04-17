@@ -1,0 +1,781 @@
+---
+title: "Raport: Analiza migracji i edukacji obywateli Ukrainy w Polsce oraz związane z tym usługi i benefity"
+author: "Julia Skalska"
+date: "`r Sys.Date()`"
+output: html_document
+pandoc_args: ["--wrap=none"]
+
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Wprowadzenie
+
+<p style="text-indent: 20px; text-align: justify;">
+ W tym raporcie przedstawiono analizę danych dotyczących migracji i edukacji obywateli Ukrainy w Polsce. Od wybuchu wojny ukraińsko-rosyjskiej zaobserwowano znaczny wzrost napływu Ukraińców do Polski, co potwierdza fakt, że liczba  przebywających na terenie naszego kraju ludzi tej narodowości znacząco się zwiększyła. Ma to istotny wpływ na różne aspekty życia społecznego i gospodarczego w kraju. Celem tej analizy jest lepsze zrozumienie dynamiki i wpływu migracji na system edukacyjny i dostęp do różnych usług takich jak np.: nadanie statusu cudzoziemca, liczbę wydanych recept, świadczeń i stypendiów. Dzięki niej będzie można spojrzeć na całość złożonego zjawiska migracji i\ zrozumieć, jakie wyzwania niesie ze sobą napływ podróżnych do Polski. W pierwszym rzędzie, ważne jest zrozumienie skali i dynamiki tego zjawiska oraz w jakich okresach zaobserwowano największy wzrost liczby podróżnych przybywających do Polski. Następnie, niezbędne jest zbadanie wpływu migracji na sektor edukacyjny, w jakich typach placówek są największe ilości obywateli Ukrainy. Kolejnym przedmiotem badania jest to, w jaki sposób są oni wspierani przez nasze państwo. Mowa tu o stypendiach i nadawaniu statusu cudzoziemca, dzięki któremu mogą zostać w naszym kraju. Dodatkowo, migracja ma także wpływ na system opieki zdrowotnej i socjalnej. Zbadano, jakie są konsekwencje napływu migracyjnego dla infrastruktury i dostępności usług medycznych oraz refundacji świadczeń. Przeanalizowano szeroki zakres danych ze strony internetowej dane.gov.pl, który umożliwił wykonanie takiej analizy.
+ </p>
+
+
+## Migracja obywateli Ukrainy do Polski
+
+```{r pressure, echo=FALSE, include=FALSE}
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+Baza_ruchu_granicznego_cudzoziemcy2023 <- read_excel("C:/Users/Asus/Desktop/praktyki/dane/dane stat dot sytuacji na granicy z ukraina/2023 styczen czerwiec/Baza_ruchu_granicznego_cudzoziemcy.xlsx", na =
+"0")
+Baza_ruchu_granicznego_cudzoziemcy2023 <- as.data.frame(Baza_ruchu_granicznego_cudzoziemcy2023)
+
+Baza_ruchu_granicznego_cudzoziemcy2023$Razem[is.na(Baza_ruchu_granicznego_cudzoziemcy2023$Razem) | Baza_ruchu_granicznego_cudzoziemcy2023$Razem == "NA"] <- 0
+
+Baza_ruchu_granicznego_cudzoziemcy2023$`UE / Schengen`[is.na(Baza_ruchu_granicznego_cudzoziemcy2023$`UE / Schengen`) | Baza_ruchu_granicznego_cudzoziemcy2023$`UE / Schengen` == "NA"] <- 0
+
+Baza_ruchu_granicznego_cudzoziemcy2023$Odwiedziny[is.na(Baza_ruchu_granicznego_cudzoziemcy2023$Odwiedziny) | Baza_ruchu_granicznego_cudzoziemcy2023$Odwiedziny == "NA"] <- 0
+Baza_ruchu_granicznego_cudzoziemcy2023 <- Baza_ruchu_granicznego_cudzoziemcy2023[ , colSums(is.na(Baza_ruchu_granicznego_cudzoziemcy2023))==0] 
+
+Baza_ruchu_granicznego_cudzoziemcy2023 <- mutate_at(Baza_ruchu_granicznego_cudzoziemcy2023, vars(11), as.numeric) 
+
+
+Baza_ruchu_granicznego_osoby2023 <- read_excel("C:/Users/Asus/Desktop/praktyki/dane/dane stat dot sytuacji na granicy z ukraina/2023 styczen czerwiec/Baza_ruchu_granicznego_osoby.xlsx", na =
+  "0")
+Baza_ruchu_granicznego_osoby2023 <- as.data.frame(Baza_ruchu_granicznego_osoby2023)
+Baza_ruchu_granicznego_osoby2023[,9:24][is.na(Baza_ruchu_granicznego_osoby2023[,9:24]) | Baza_ruchu_granicznego_osoby2023[,9:24] == "NA"] <- 0
+Baza_ruchu_granicznego_osoby2023 <- Baza_ruchu_granicznego_osoby2023[ , colSums(is.na(Baza_ruchu_granicznego_osoby2023))==0] 
+Baza_ruchu_granicznego_osoby2023 <- mutate_at(Baza_ruchu_granicznego_osoby2023, vars(9:24), as.numeric) 
+
+Baza_ruchu_granicznego_transport2023 <- read_excel("C:/Users/Asus/Desktop/praktyki/dane/dane stat dot sytuacji na granicy z ukraina/2023 styczen czerwiec/Baza_ruchu_granicznego_transport.xlsx", na =
+"0")
+Baza_ruchu_granicznego_transport2023 <- as.data.frame(Baza_ruchu_granicznego_transport2023)
+Baza_ruchu_granicznego_transport2023[,9:25][is.na(Baza_ruchu_granicznego_transport2023[,9:25]) | Baza_ruchu_granicznego_transport2023[,9:25] == "NA"] <- 0
+Baza_ruchu_granicznego_transport2023 <- Baza_ruchu_granicznego_transport2023[ , colSums(is.na(Baza_ruchu_granicznego_transport2023))==0] 
+Baza_ruchu_granicznego_transport2023 <- mutate_at(Baza_ruchu_granicznego_transport2023, vars(9:25), as.numeric) 
+
+Baza_ruchu_granicznego_cudzoziemcy2022 <- read_excel("dane/dane stat dot sytuacji na granicy z ukraina/2022 styczen grudzien/Baza_ruchu_granicznego_-_styczeń-grudzień_2022_10.01.2023_cudzoziemcy.xlsx",na =
+"0")
+Baza_ruchu_granicznego_cudzoziemcy2022 <- as.data.frame(Baza_ruchu_granicznego_cudzoziemcy2022)
+Baza_ruchu_granicznego_cudzoziemcy2022[,10:20][is.na(Baza_ruchu_granicznego_cudzoziemcy2022[,10:20]) | Baza_ruchu_granicznego_cudzoziemcy2022[,10:20] == "NA"] <- 0
+Baza_ruchu_granicznego_cudzoziemcy2022 <- Baza_ruchu_granicznego_cudzoziemcy2022[ , colSums(is.na(Baza_ruchu_granicznego_cudzoziemcy2022))==0] 
+Baza_ruchu_granicznego_cudzoziemcy2022 <- mutate_at(Baza_ruchu_granicznego_cudzoziemcy2022, vars(10:19), as.numeric) 
+
+Baza_ruchu_granicznego_osoby2022 <- read_excel("dane/dane stat dot sytuacji na granicy z ukraina/2022 styczen grudzien/Baza_ruchu_granicznego_-_styczeń-grudzień_2022_10.01.2023_osoby.xlsx",na =
+"0")
+Baza_ruchu_granicznego_osoby2022 <- as.data.frame(Baza_ruchu_granicznego_osoby2022)
+Baza_ruchu_granicznego_osoby2022[,9:24][is.na(Baza_ruchu_granicznego_osoby2022[,9:24]) | Baza_ruchu_granicznego_osoby2022[,9:24] == "NA"] <- 0
+Baza_ruchu_granicznego_osoby2022 <- Baza_ruchu_granicznego_osoby2022[ , colSums(is.na(Baza_ruchu_granicznego_osoby2022))==0] 
+Baza_ruchu_granicznego_osoby2022 <- mutate_at(Baza_ruchu_granicznego_osoby2022, vars(9:24), as.numeric) 
+
+Baza_ruchu_granicznego_transport2022 <- read_excel("dane/dane stat dot sytuacji na granicy z ukraina/2022 styczen grudzien/Baza_ruchu_granicznego_-_styczeń-grudzień_2022_10.01.2023_transport.xlsx",na =
+"0")
+Baza_ruchu_granicznego_transport2022 <- as.data.frame(Baza_ruchu_granicznego_transport2022)
+Baza_ruchu_granicznego_transport2022[,9:25][is.na(Baza_ruchu_granicznego_transport2022[9:25]) | Baza_ruchu_granicznego_transport2022[9:25] == "NA"] <- 0
+Baza_ruchu_granicznego_transport2022 <- Baza_ruchu_granicznego_transport2022[ , colSums(is.na(Baza_ruchu_granicznego_transport2022))==0] 
+Baza_ruchu_granicznego_transport2022 <- mutate_at(Baza_ruchu_granicznego_transport2022, vars(9:25), as.numeric) 
+
+Baza_ruchu_granicznego_cudzoziemcy2021 <- read_excel("dane/dane stat dot sytuacji na granicy z ukraina/2021 styczen grudzien/Baza_ruchu_granicznego_-_osoby_-_cudzoziemcy_-_transport_-_styczeń-grudzień_2021_10.01.2022cudzoziemcy.xlsx",  na =
+"0")
+Baza_ruchu_granicznego_cudzoziemcy2021 <- as.data.frame(Baza_ruchu_granicznego_cudzoziemcy2021)
+Baza_ruchu_granicznego_cudzoziemcy2021[,10:20][is.na(Baza_ruchu_granicznego_cudzoziemcy2021[,10:20]) | Baza_ruchu_granicznego_cudzoziemcy2021[,10:20] == "NA"] <- 0
+Baza_ruchu_granicznego_cudzoziemcy2021 <- Baza_ruchu_granicznego_cudzoziemcy2021[ , colSums(is.na(Baza_ruchu_granicznego_cudzoziemcy2021))==0] 
+Baza_ruchu_granicznego_cudzoziemcy2021 <- mutate_at(Baza_ruchu_granicznego_cudzoziemcy2021, vars(10:19), as.numeric) 
+
+Baza_ruchu_granicznego_osoby2021 <- read_excel("dane/dane stat dot sytuacji na granicy z ukraina/2021 styczen grudzien/Baza_ruchu_granicznego_-_osoby_-_cudzoziemcy_-_transport_-_styczeń-grudzień_2021_10.01.2022osoby.xlsx", na =
+"0")
+Baza_ruchu_granicznego_osoby2021 <- as.data.frame(Baza_ruchu_granicznego_osoby2021)
+Baza_ruchu_granicznego_osoby2021 <- Baza_ruchu_granicznego_osoby2021[,-c(25,26)]
+Baza_ruchu_granicznego_osoby2021[,9:24][is.na(Baza_ruchu_granicznego_osoby2021[,9:24]) | Baza_ruchu_granicznego_osoby2021[,9:24] == "NA"] <- 0
+Baza_ruchu_granicznego_osoby2021 <- Baza_ruchu_granicznego_osoby2021[ , colSums(is.na(Baza_ruchu_granicznego_osoby2021))==0] 
+Baza_ruchu_granicznego_osoby2021 <- mutate_at(Baza_ruchu_granicznego_osoby2021, vars(9:24), as.numeric) 
+
+Baza_ruchu_granicznego_transport2021 <- read_excel("dane/dane stat dot sytuacji na granicy z ukraina/2021 styczen grudzien/Baza_ruchu_granicznego_-_osoby_-_cudzoziemcy_-_transport_-_styczeń-grudzień_2021_10.01.2022transport.xlsx", na =
+"0")
+Baza_ruchu_granicznego_transport2021 <- as.data.frame(Baza_ruchu_granicznego_transport2021)
+Baza_ruchu_granicznego_transport2021[,9:25][is.na(Baza_ruchu_granicznego_transport2021[,9:25]) | Baza_ruchu_granicznego_transport2021[,9:25] == "NA"] <- 0
+Baza_ruchu_granicznego_transport2021 <- Baza_ruchu_granicznego_transport2021[ , colSums(is.na(Baza_ruchu_granicznego_transport2021))==0] 
+Baza_ruchu_granicznego_transport2021 <- mutate_at(Baza_ruchu_granicznego_transport2021, vars(9:25), as.numeric) 
+
+
+Baza_ruchu_granicznego_cudzoziemcy2020 <- read_excel("dane/dane stat dot sytuacji na granicy z ukraina/2020 styczen grudzien/Baza_ruchu_granicznego_-_styczeń-grudzień_2020_11.01.2021cudzoziemcy.xlsx", na =
+"0")
+Baza_ruchu_granicznego_cudzoziemcy2020 <- as.data.frame(Baza_ruchu_granicznego_cudzoziemcy2020)
+Baza_ruchu_granicznego_cudzoziemcy2020[,10:20][is.na(Baza_ruchu_granicznego_cudzoziemcy2020[,10:20]) | Baza_ruchu_granicznego_cudzoziemcy2020[,10:20] == "NA"] <- 0
+Baza_ruchu_granicznego_cudzoziemcy2020 <- Baza_ruchu_granicznego_cudzoziemcy2020[ , colSums(is.na(Baza_ruchu_granicznego_cudzoziemcy2020))==0] 
+Baza_ruchu_granicznego_cudzoziemcy2020 <- mutate_at(Baza_ruchu_granicznego_cudzoziemcy2020, vars(10:19), as.numeric) 
+
+Baza_ruchu_granicznego_transport2020 <- read_excel("dane/dane stat dot sytuacji na granicy z ukraina/2020 styczen grudzien/Baza_ruchu_granicznego_-_styczeń-grudzień_2020_11.01.2021transport.xlsx",  na =
+"0")
+Baza_ruchu_granicznego_transport2020 <- as.data.frame(Baza_ruchu_granicznego_transport2020)
+Baza_ruchu_granicznego_transport2020[,9:25][is.na(Baza_ruchu_granicznego_transport2020[,9:25]) | Baza_ruchu_granicznego_transport2020[,9:25] == "NA"] <- 0
+Baza_ruchu_granicznego_transport2020 <- Baza_ruchu_granicznego_transport2020[ , colSums(is.na(Baza_ruchu_granicznego_transport2020))==0] 
+Baza_ruchu_granicznego_transport2020 <- mutate_at(Baza_ruchu_granicznego_transport2020, vars(9:25), as.numeric) 
+
+
+Baza_ruchu_granicznego_osoby2020 <- read_excel("dane/dane stat dot sytuacji na granicy z ukraina/2020 styczen grudzien/Baza_ruchu_granicznego_-_styczeń-grudzień_2020_11.01.2021osoby.xlsx",  na =
+"0")
+Baza_ruchu_granicznego_osoby2020 <- as.data.frame(Baza_ruchu_granicznego_osoby2020)
+Baza_ruchu_granicznego_osoby2020[,9:24][is.na(Baza_ruchu_granicznego_osoby2020[,9:24]) | Baza_ruchu_granicznego_osoby2020[,9:24] == "NA"] <- 0
+Baza_ruchu_granicznego_osoby2020 <- Baza_ruchu_granicznego_osoby2020[ , colSums(is.na(Baza_ruchu_granicznego_osoby2020))==0] 
+Baza_ruchu_granicznego_osoby2020 <- mutate_at(Baza_ruchu_granicznego_osoby2020, vars(9:24), as.numeric) 
+
+```
+
+<p style="text-indent: 20px; text-align: justify;">
+Do potrzebnych obliczeń związanych z migracją na granicy, skorzystano z tabel znajdujących się w zakładce "Ukraina". Mają one nazwę: "Baza ruchu granicznego", a okres ich danych obejmuje od 1 stycznia 2020 roku do 30 czerwca 2023 roku. Są podzielone na trzy arkusze dotyczące osób, cudzoziemców i transportu. Najpierw analizę zaczęto od zbadania, ile osób przekracza granicę z Polską. Przedmiotem badań jest pięć odcinków: z\ Ukrainą, Federacją Rosyjską, Białorusią, a także droga lotnicza i granica morska, czyli wszystkie odcinki, na których badany jest ruch graniczny. Aby zwizualizować migrację do Polski, wykonano wykres słupkowy, który przedstawia sumę przyjazdów podróżnych z różnych krajów na przestrzeni ostatnich czterech lat.
+</p>
+
+<p style="text-indent: 20px; text-align: justify;">
+Wraz z napaścią Rosji na Ukrainę w 2022 roku, liczba osób wjeżdżających do Polski znacząco wzrosła. Porównując dane z lat poprzednich, widzimy gwałtowny skok w liczbie wjeżdżających. W 2020 roku było to 8 924 419 osób, a w 2021 roku liczba ta wzrosła do 9 735 646 osób. W roku 2022 odnotowano znaczący wzrost, sięgający 19 619 119 osób, co stanowi niemal dziesięciokrotnie większą liczbę niż w roku 2020.
+</p>
+
+<p style="text-indent: 20px; text-align: justify;">
+W bieżącym roku, na podstawie danych do końca czerwca, widzimy, że liczba wjeżdżających nadal jest na wysokim poziomie, wynoszącym 9\ 597 756 osób. To już teraz przekracza ilość wjeżdżających w całym roku 2020. W związku z tym, można przypuszczać, że na podstawie tego trendu, liczba wjeżdżających do Polski do końca roku prawdopodobnie przekroczy również sumę z 2021 roku. Dalszy rozwój wydarzeń na Ukrainie i ewentualne pogorszenie sytuacji w regionie może nadal wpływać na ruch migracyjny do Polski.
+</p>
+
+<p style="text-indent: 20px; text-align: justify;">
+Warto zaznaczyć, że w 2020 roku wybuchła pandemia COVID-19. Jej wpływ na liczbę wjeżdżających do Polski był znaczący i negatywny. Pandemia wywołała globalny kryzys zdrowia publicznego, który spowodował wprowadzenie ograniczeń i restrykcji w podróżach międzynarodowych oraz ruchu granicznym. Wraz z wybuchem pandemii w pierwszej połowie 2020 roku, Polska podjęła szereg środków, takich jak zamknięcie granic dla ruchu turystycznego i wprowadzenie kwarantanny dla przyjeżdżających, w celu ograniczenia rozprzestrzeniania się wirusa. Te działania znacznie ograniczyły możliwość przemieszczania się osób między krajami, w tym dla Ukraińców, którzy tradycyjnie stanowią dużą grupę wjeżdżających do Polski. 
+</p>
+
+<p style="text-indent: 20px; text-align: justify;">
+Pandemia COVID-19 trwała przez cały 2021 rok, co wpłynęło na niską liczbę podróżujących. Wprowadzone restrykcje i ograniczenia w\ podróżach międzynarodowych nadal utrudniały przemieszczanie się osób między krajami, co miało negatywny wpływ na ruch graniczny.
+</p>
+
+```{r, echo=FALSE, fig.width=10, fig.height=6}
+par(mar=c(5, 6, 4, 2) + 0.1) 
+
+suma_przyjazd <- sum(subset(Baza_ruchu_granicznego_osoby2020, Kierunek == "przyjazd")$Razem)
+suma_przyjazd2 <- sum(subset(Baza_ruchu_granicznego_osoby2021, Kierunek == "przyjazd")$Razem)
+suma_przyjazd3 <- sum(subset(Baza_ruchu_granicznego_osoby2022, Kierunek == "przyjazd")$Razem)
+suma_przyjazd4 <- sum(subset(Baza_ruchu_granicznego_osoby2023, Kierunek == "przyjazd")$Razem)
+
+nazwy <- c("2020","2021","2022","2023 (do 30 czerwca)")
+kolory <- c("light blue","light yellow","pink","light green")
+options(scipen = 10) 
+barplot(c(suma_przyjazd,suma_przyjazd2,suma_przyjazd3,suma_przyjazd4), xlab="Lata od 2020 do 2022", ylab="suma przyjazdów do Polski", ylim = c(0, 20000000), names.arg = nazwy, col=kolory, main="Liczba przyjazdów do Polski od 2020 roku do 30 czerwca 2023, stan na 8 lipca 2023 roku")
+zrodlo <- "Źródło: Dane dostarczone przez Komendę Straży Granicznej,"
+text(x = 0.05, y = 19000000, labels = zrodlo, pos = 4, col = "black", cex = 0.8)
+zrodlo2 <- "opublikowane na stronie dane.gov.pl,"
+text(x = 0.05, y = 18000000, labels = zrodlo2, pos = 4, col = "black", cex = 0.8)
+zrodlo3 <- "https://dane.gov.pl/pl/dataset/2708,dane-statystyczne-ruchu-granicznego-srodkow-transportu"
+text(x = 0.05, y = 17000000, labels = zrodlo3, pos = 4, col = "black", cex = 0.8)
+par(cex.main = 0.8) 
+
+```
+<p style="text-indent: 20px; text-align: justify;">
+Analizując dane dotyczące liczby osób wjeżdżających do Polski w latach 2020, 2021 i 2022, można zaobserwować wyraźny wpływ wybuchu wojny ukraińsko-rosyjskiej na ruch graniczny. Liczba osób wjeżdżających do Polski gwałtownie wzrosła w odpowiedzi na zaistniałą sytuację, osiągając niemal dziesięciokrotnie większy poziom niż przed konfliktem. Pomimo trwania pandemii COVID-19, liczba wjeżdżających do Polski pozostawała na wysokim poziomie w 2022 roku. Wskazuje to na wyjątkowość sytuacji oraz na to, że czynniki polityczne i społeczne miały większy wpływ na ruch graniczny niż ograniczenia związane z pandemią. Z kolei w 2020 roku widać wyraźny wpływ restrykcji i ograniczeń związanych z\ pandemią na liczbę osób wjeżdżających do Polski.
+</p>
+
+<p style="text-indent: 20px; text-align: justify;">
+Pandemia wywołana wirusem SARS-CoV-2 miała ogromny wpływ na światowy ruch graniczny, a Polska nie była wyjątkiem. Wiele osób zdecydowało się odłożyć swoje plany podróży ze względu na obawy związane z ryzykiem zakażenia i ograniczeniami podróżowania. Obostrzenia na granicach i zmiany w przepisach dotyczących podróży spowodowały znaczny spadek liczby wjeżdżających.
+</p>
+
+<p style="text-indent: 20px; text-align: justify;">
+Następne badanie koncentrowało się na przekroczeniach granicy ukraińsko-polskiej. W celu zobrazowania tego zjawiska, sporządzono tabelę przedstawiającą sumę przekroczeń granicznych na tym odcinku w latach 2020-2023. Analiza danych wykazała, że większość ruchu granicznego w\ ostatnich latach skupiała się właśnie na granicy między Ukrainą a Polską. W celu bardziej przystępnego przedstawienia tej tezy, opracowano wykres kołowy, prezentujący procentowy udział przekroczeń granicznych w 2022 roku na poszczególnych odcinkach granicy, które były przedmiotem badania. Kolorem fioletowym oznaczono sumę przyjazdów podróżnych z Ukrainy do Polski, czerwonym drogą lotniczą, niebieskim z\ Republiki Białorusi, zielonym z Federacją Rosyjską, a żółtym granicą morską.
+</p>
+ 
+```{r, echo=FALSE, fig.width=10, fig.height=6}
+suma_przekroczeń_na_granicy_UA_2020 <- Baza_ruchu_granicznego_osoby2020 %>%
+  filter(`Kierunek` == "przyjazd" & `Odcinek` == "z Ukrainą") %>%
+
+  summarise(suma_przekroczeń_na_granicy_UA_2020 = sum(Razem))
+
+suma_przekroczeń_na_granicy_UA_2021 <- Baza_ruchu_granicznego_osoby2021 %>%
+  filter(`Kierunek` == "przyjazd" & `Odcinek` == "z Ukrainą") %>%
+
+  summarise(suma_przekroczeń_na_granicy_UA_2021 = sum(Razem))
+
+suma_przekroczeń_na_granicy_UA_2022 <- Baza_ruchu_granicznego_osoby2022 %>%
+  filter(`Kierunek` == "przyjazd" & `Odcinek` == "z Ukrainą") %>%
+
+  summarise(suma_przekroczeń_na_granicy_UA_2022 = sum(Razem))
+
+suma_przekroczeń_na_granicy_UA_2023 <- Baza_ruchu_granicznego_osoby2023 %>%
+  filter(`Kierunek` == "przyjazd" & `Odcinek` == "z Ukrainą") %>%
+
+  summarise(suma_przekroczeń_na_granicy_UA_2023 = sum(Razem))
+
+tabela_przekroczen_na_granicy_UA <- data.frame(c(suma_przekroczeń_na_granicy_UA_2020,suma_przekroczeń_na_granicy_UA_2021,suma_przekroczeń_na_granicy_UA_2022,suma_przekroczeń_na_granicy_UA_2023))
+colnames(tabela_przekroczen_na_granicy_UA) <- (c("2020","2021","2022","2023"))
+rownames(tabela_przekroczen_na_granicy_UA) <- "Suma przyjazdów do Polski z Ukrainy"
+tabela_przekroczen_na_granicy_UA
+
+wynik <- Baza_ruchu_granicznego_osoby2022 %>%
+   filter(Kierunek == "przyjazd") %>%
+  group_by(Odcinek) %>%
+  summarise(Suma_Wartości = sum(Razem))
+
+wykres <- ggplot(wynik, aes(x = "", y = Suma_Wartości, fill = Odcinek)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y", start = 0) +
+  labs(title = "Wykres kołowy sumy przekroczeń granicy w 2022 roku, stan na 8 lipca 2023 roku",
+       x = NULL,
+       y = NULL) +
+  theme_void() +
+  theme(legend.position = "bottom",
+        text = element_text(size = 16),  
+        plot.title = element_text(size = 11),  
+        plot.margin = margin(0.001, 0.001, 0.001, 0.001, "cm")) 
+zrodlo <- "Źródło:"
+zrodlo1 <- "Dane dostarczone przez Komendę Straży Granicznej, opublikowane na stronie dane.gov.pl"
+zrodlo2 <- "https://dane.gov.pl/pl/dataset/2708,dane-statystyczne-ruchu-granicznego-srodkow-transportu"
+wykres_z_zrodlem <- ggdraw(wykres) + 
+  draw_label(zrodlo, x = 0.49, y = 0.1, hjust = 0.5, vjust = 0,
+             fontface = 'italic', color = "black", size = 10) +
+  draw_label(zrodlo1, x = 0.49, y = 0.08, hjust = 0.5, vjust = 0,
+             fontface = 'italic', color = "black", size = 10) +
+  draw_label(zrodlo2, x = 0.49, y = 0.06, hjust = 0.5, vjust = 0,
+             fontface = 'italic', color = "black", size = 10)
+
+print(wykres_z_zrodlem)
+
+tabela <- data.frame(wynik)
+colnames(tabela) <- c("Odcinek","Suma wartości")
+tabela
+```
+<p style="text-indent: 20px; text-align: justify;">
+Wnioskiem z analizy jest to, że oprócz przekroczeń granicy z Ukrainą, równie znaczącą częścią migracji jest podróż drogą lotniczą, może to wynikać z szybkości, wygody i globalnej dostępności lotnictwa. Następnie odnotowano wyższy ruch graniczny na granicy z Białorusią oraz Federacją Rosyjską. Na koniec, najmniejszą część migracji stanowiły przekroczenia graniczne na obszarze morskim. Granica ukraińsko-polska odgrywa kluczową rolę w ruchu migracyjnym, będąc głównym punktem przekraczania granicy w badanym roku. Wyniki sugerują, że duży napływ migrantów może być związany z wybuchem wojny, zmuszającej ludzi do poszukiwania schronienia i lepszych warunków życia na terenie Polski i\ innych krajów niż ojczysty.
+</p>
+
+<p style="text-indent: 20px; text-align: justify;">
+Kolejnym tematem badania było wyróżnienie cudzoziemców przekraczających granicę polsko-ukraińską i zsumowanie ilości obywateli Ukrainy, którzy w 2022 roku wjechali na terytorium Polski. Ich liczba wyniosła 9 086 946. Porównując ten wynik z wynikiem poprzedniej analizy, w której przekroczeń granicy było łącznie 9 677 248, widać, że znaczną większość osób stanowili obywatele Ukrainy.
+</p>
+
+<p style="text-indent: 20px; text-align: justify;">
+Dodatkowo zobrazowano, jak ta zsumowana liczba rozkładała się na poszczególne przejścia graniczne. W tym celu wykorzystano wykres punktowy, który przedstawia ilość przekroczeń na każdym z przejść granicznych w postaci kropek.
+</p>
+```{r, echo=FALSE, fig.width=10, fig.height=6}
+suma_przyjazdy_ukraina <- Baza_ruchu_granicznego_cudzoziemcy2022 %>%
+  filter(`Kierunek do/z RP` == "P" & `Obywatelstwo (kod)`  == "UA" & `Odcinek` == "z Ukrainą") %>%
+  summarise(Suma_Przyjazdy_Ukraina = sum(Razem))
+
+suma_rozdzielona_na_poszczegolne_przejścia_2022 <- Baza_ruchu_granicznego_cudzoziemcy2022 %>%
+  filter(`Kierunek do/z RP` == "P" & `Obywatelstwo (kod)`  == "UA" & `Odcinek` == "z Ukrainą") %>%
+    group_by(Przejście) %>%
+  summarise(Suma_Przyjazdy_Ukraina = sum(Razem))
+
+wykres2 <- ggplot(suma_rozdzielona_na_poszczegolne_przejścia_2022, aes(x = Przejście, y = Suma_Przyjazdy_Ukraina, fill = Przejście)) +
+  geom_point(shape = 21, size = 5, color = "black") +  
+  labs(title = "Suma przekroczeń obywateli Ukrainy na granicy z Ukrainy do Polski na poszczególnych przejściach w 2022 roku, stan na 8 lipca 2023 roku",
+       x = "",
+       y = "Suma Przyjazdów z Ukrainy") +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(size = 10))
+zrodlo <- "Źródło:"
+zrodlo1 <- "Dane dostarczone przez Komendę Straży Granicznej, opublikowane na stronie dane.gov.pl"
+zrodlo2 <- "https://dane.gov.pl/pl/dataset/2708,dane-statystyczne-ruchu-granicznego-srodkow-transportu"
+wykres2_z_zrodlem <- ggdraw(wykres2) + 
+  draw_label(zrodlo, x = 0.5, y = 0.1, hjust = 0.7, vjust = 0,
+             fontface = 'italic', color = "black", size = 10) +
+  draw_label(zrodlo1, x = 0.7, y = 0.07, hjust = 0.7, vjust = 0,
+             fontface = 'italic', color = "black", size = 10) +
+  draw_label(zrodlo2, x = 0.7, y = 0.05, hjust = 0.7, vjust = 0,
+             fontface = 'italic', color = "black", size = 10)
+
+print(wykres2_z_zrodlem)
+
+```
+<p style="text-indent: 20px; text-align: justify;">
+Z przeprowadzonej analizy wynika, że najwięcej obywateli Ukrainy przekroczyło granicę na przejściu Medyka-Szeginie - aż 2 130 976 osób. Na\ drugim miejscu znalazło się przejście Korczowa-Krakowiec z 1 326 639 przekroczeniami, a nieznacznie mniej - 1 314 846 osób - przekroczyło granicę na przejściu Hrebenne-Rawa Ruska. Natomiast najmniej przekroczeń zanotowano na granicy Korczmin-Stajiwka - tylko 39 osób.
+</p>
+
+<p style="text-indent: 20px; text-align: justify;">
+Należy również zaznaczyć, że między przejściem Korczmin-Stajiwka, a kolejnym z najmniejszą liczbą przekroczeń, czyli Werchata-Rawa Ruska, gdzie przekroczyło granicę 1149 osób, istnieje wyraźna różnica. Wynik ten wskazuje na wyraźne zróżnicowanie liczby przekroczeń między różnymi przejściami granicznymi.
+</p>
+
+<p style="text-indent: 20px; text-align: justify;">
+Ostatnim przedmiotem badań migracji do Polski był transport. Skoncentrowano się na analizie sposobów wjazdu z Ukrainy na przestrzeni ostatnich lat i skupiono się wyłącznie na dwóch rodzajach transportu: drogowym i kolejowym. Wykazano, że tylko te dwa rodzaje były używane do przekraczania granicy między tymi dwoma krajami. Ta precyzyjna analiza pozwoliła lepiej zrozumieć preferencje migracyjne i najczęstsze środki transportu wykorzystywane przez cudzoziemców przy wjeździe do Polski z Ukrainy. 
+<p/>
+```{r, echo=FALSE, fig.width=10, fig.height=6}
+suma_rodzajow_transportu_2020 <- Baza_ruchu_granicznego_transport2020 %>%
+  filter(`Kierunek` == "przyjazd" & `Odcinek` == "z Ukrainą") %>%
+  group_by(`Rodzaj przejścia`) %>%
+  summarise(rodzaje_transportu_2020 = sum(Razem))
+
+suma_rodzajow_transportu_2021 <- Baza_ruchu_granicznego_transport2021 %>%
+  filter(`Kierunek` == "przyjazd" & `Odcinek` == "z Ukrainą") %>%
+  group_by(`Rodzaj przejścia`) %>%
+  summarise(rodzaje_transportu_2021 = sum(Razem))
+
+suma_rodzajow_transportu_2022 <- Baza_ruchu_granicznego_transport2022 %>%
+  filter(`Kierunek` == "przyjazd" & `Odcinek` == "z Ukrainą") %>%
+  group_by(`Rodzaj przejścia`) %>%
+  summarise(rodzaje_transportu_2022 = sum(Razem))
+
+suma_rodzajow_transportu_2023 <- Baza_ruchu_granicznego_transport2023 %>%
+  filter(`Kierunek` == "przyjazd" & `Odcinek` == "z Ukrainą") %>%
+  group_by(`Rodzaj przejścia`) %>%
+  summarise(rodzaje_transportu_2023 = sum(Razem))
+
+
+ramka_transport <-bind_cols(
+  Rok_2020 = suma_rodzajow_transportu_2020$rodzaje_transportu_2020,
+  Rok_2021 = suma_rodzajow_transportu_2021$rodzaje_transportu_2021,
+  Rok_2022 = suma_rodzajow_transportu_2022$rodzaje_transportu_2022,
+  Rok_2023 = suma_rodzajow_transportu_2023$rodzaje_transportu_2023
+)
+ramka_transportt <- as.data.frame(ramka_transport)
+rownames(ramka_transportt) <- c("drogowe","kolejowe")
+ramka_transportt
+
+
+```
+<p style="text-indent: 20px; text-align: justify;">
+Zauważono, że przejście drogowe jest częściej wybierane niż kolejowe w kontekście przekraczania granicy między Polską a Ukrainą.
+<p/>
+##  Edukacja obywateli Ukrainy w Polsce
+<p style="text-indent: 20px; text-align: justify;">
+Wraz z wybuchem wojny ukraińsko-rosyjskiej, Polacy okazali solidarność i pomoc obywatelom Ukrainy w różnorodny sposób. Jednym z\ ważnych działań było umożliwienie przyjęć do różnych szkół i uczelni dzieci i studentów, którzy mogli kontynuować edukację w Polsce. W\ ramach tej inicjatywy zebrano dane, które zostały opublikowane w zakłade "Ukraina". Mają one nazwę: "Zestawienie_Studentow_Kierunku_Lekarskiego_ i_Lekarsko_Dentystycznego_2023-07-10" oraz "Zestawienie_Studentow_z_Obywatelstwem_ Ukrainskim_w_Podziale_na_Wojewodztwa_2023-07-10". Badania te dostarczają dokładniejszych informacji na temat studentów z Ukrainy uczęszczających na polskie uczelnie. W tabelach wyodrębniono kierunki ze specjalizacji lekarskiej i lekarsko-dentystycznej. Dane obejmują okres od marca 2022 roku.
+<p/>
+<p style="text-indent: 20px; text-align: justify;">
+Na podstawie zebranych danych wykonano wykres punktowy, który przedstawia liczbę studentów z Ukrainy uczęszczających na uczelnie medyczne w Polsce. Według wyników, największa liczba studentów, aż 1091, znajduje się na Śląskim Uniwersytecie Medycznym. Kolejną najliczniejszą grupę stanowi Warszawski Uniwersytet Medyczny, gdzie studiuje 962 osób z Ukrainy. Natomiast najmniejszą liczbę studentów, wynoszącą 54, odnotowano na Akademii Medycznych i Społecznych Nauk Stosowanych, co może być związane z wielkością tej uczelni. Te dane potwierdzają zaangażowanie polskich instytucji edukacyjnych i społeczności w udzielaniu wsparcia ukraińskim studentom w trudnym okresie konfliktu, zapewniając im możliwość kontynuowania nauki i rozwoju w Polsce. Do opracowania wykresu wykorzystano zróżnicowanie kolorów.  Dzięki zastosowaniu intensywności barw, możliwe jest szybkie wyraźne uwypuklenie różnic w liczbie studentów pomiędzy uczelniami i\ specjalizacjami. Im większa liczba studentów na danym kierunku i uczelni, tym intensywniejszy kolor punktu.
+</p>
+```{r, echo=FALSE}
+
+Zestawienie_Studentow_Kierunku_Lekarskiego_i_Lekarsko_Dentystycznego_po_marcu_2022 <- read_excel("dane/studenci/Zestawienie_Studentow_Kierunku_Lekarskiego_i_Lekarsko_Dentystycznego_2023-07-10.xlsx", na =
+"0")
+Zestawienie_Studentow_Kierunku_Lekarskiego_i_Lekarsko_Dentystycznego_po_marcu_2022 <- as.data.frame(Zestawienie_Studentow_Kierunku_Lekarskiego_i_Lekarsko_Dentystycznego_po_marcu_2022)
+
+Zestawienie_Studentow_Kierunku_Lekarskiego_i_Lekarsko_Dentystycznego_po_marcu_2022[,4:9][is.na(Zestawienie_Studentow_Kierunku_Lekarskiego_i_Lekarsko_Dentystycznego_po_marcu_2022[,4:9]) | Zestawienie_Studentow_Kierunku_Lekarskiego_i_Lekarsko_Dentystycznego_po_marcu_2022[,4:9] == "NA"] <- 0
+
+Zestawienie_Studentow_Kierunku_Lekarskiego_i_Lekarsko_Dentystycznego_po_marcu_2022 <- Zestawienie_Studentow_Kierunku_Lekarskiego_i_Lekarsko_Dentystycznego_po_marcu_2022[ , colSums(is.na(Zestawienie_Studentow_Kierunku_Lekarskiego_i_Lekarsko_Dentystycznego_po_marcu_2022))==0] 
+Zestawienie_Studentow_Kierunku_Lekarskiego_i_Lekarsko_Dentystycznego_po_marcu_2022 <- mutate_at(Zestawienie_Studentow_Kierunku_Lekarskiego_i_Lekarsko_Dentystycznego_po_marcu_2022, vars(4:9), as.numeric) 
+
+liczba_studentow_zarejestrowanych_po_marcu_uczelnie <- Zestawienie_Studentow_Kierunku_Lekarskiego_i_Lekarsko_Dentystycznego_po_marcu_2022 %>%
+  group_by(`Instytucja`) %>%
+  summarise(Liczba_studentow = sum(`Liczba studentów zarejestrowanych po 2022-03-15 - ogółem`))
+liczba_studentow_zarejestrowanych_po_marcu_uczelnie <- as.data.frame(liczba_studentow_zarejestrowanych_po_marcu_uczelnie)
+
+ wykres3 <- ggplot(liczba_studentow_zarejestrowanych_po_marcu_uczelnie, aes(x = Instytucja, y = Liczba_studentow)) +
+  geom_point(size = 2, aes(color = Liczba_studentow), alpha = 0.8) + 
+  labs(title = "Studenci na uczelniach medycznych zarejestrowani po 15 marca 2022 roku, stan na 10 lipca 2023 roku",
+       x = "Instytucje",
+       y = "Liczba Studentów") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = -45, hjust = 0),
+        plot.title = element_text(size = 10), 
+        plot.margin = margin(0.001, 0.001, 0.001, 0.001, "cm")) +  
+  scale_color_gradient(low = "yellow", high = "red")  
+zrodlo <- "Źródło:"
+zrodlo1 <- "Dane dostarczone przez Ministerstwo Edukacji i Nauki, opublikowane na stronie dane.gov.pl,"
+zrodlo2 <- "https://dane.gov.pl/pl/dataset/2704,studenci-obywatele-ukrainy"
+odstep <- " " 
+
+wykres3_z_zrodlem <- ggdraw(wykres3) + 
+  draw_label(zrodlo, x = 0.1, y = 0.12, hjust = 0.7, vjust = 0,
+             fontface = 'italic', color = "black", size = 10) +
+  draw_label(zrodlo1, x = 0.6, y = 0.09, hjust = 0.7, vjust = 0,
+             fontface = 'italic', color = "black", size = 10) +
+  draw_label(odstep, x = 0.5, y = 0.075, hjust = 0.7, vjust = 0,
+             fontface = 'italic', color = "black", size = 10) + 
+  draw_label(zrodlo2, x = 0.29, y = 0.06, hjust = 0.5, vjust = 0,
+             fontface = 'italic', color = "black", size = 10)
+
+print(wykres3_z_zrodlem)
+par(cex.main = 0.8) 
+
+liczba_studentow_podzielona_na_kierunki <- Zestawienie_Studentow_Kierunku_Lekarskiego_i_Lekarsko_Dentystycznego_po_marcu_2022 %>%
+  group_by(`Nazwa kierunku`) %>%
+  summarise(Liczba_studentow = sum(`Liczba studentów zarejestrowanych po 2022-03-15 - ogółem`))
+
+```
+
+<p style="text-indent: 20px; text-align: justify;">
+W kolejnym badaniu, przeprowadzonym na podstawie zebranych danych, skupiono się na podziale studentów ze względu na kierunek studiów. Dane te obejmują okres od marca 2022 roku i ukazują interesujące wyniki. W tym badaniu zaobserwowano, że na kierunek lekarski przyjęto łącznie 8573 osoby, co wskazuje na znaczne zainteresowanie tą dziedziną medycyny wśród studentów z Ukrainy. Ponadto, na kierunek lekarsko-dentystyczny przyjęto 1295 osób, co także stanowi znaczącą liczbę studentów.
+</p>
+```{r, echo=FALSE}
+liczba_studentow_podzielona_na_kierunki <- as.data.frame(liczba_studentow_podzielona_na_kierunki)
+liczba_studentow_podzielona_na_kierunki
+```
+<p style="text-indent: 20px; text-align: justify;">
+Oferowanie możliwości kształcenia się na tych specjalizacjach może przyczynić się do poszerzenia wiedzy i umiejętności studentów oraz zaowocować korzyściami zarówno dla nich, jak i dla społeczeństwa, gdyż lekarze i dentyści odgrywają kluczową rolę w opiece zdrowotnej społeczeństwa. Dzięki wsparciu polskich instytucji edukacyjnych, ukraińscy studenci otrzymują szanse na rozwijanie swoich umiejętności i wiedzy w dziedzinach medycyny, co może przyczynić się do wspólnego rozwoju obu krajów.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Następne badanie skupiało się na podziale studentów ze wszystkich kierunków z Ukrainy ze względu na województwo, w którym się uczą. Na\ podstawie zebranych danych utworzono wykres słupkowy, który przedstawia liczbę studentów z Ukrainy zarejestrowanych w poszczególnych województwach. Analiza wykresu pozwala na zrozumienie rozkładu studentów z Ukrainy w różnych regionach Polski. Im większa liczba studentów, tym intensywniejszy kolor słupka. Odcienie kolorów przechodzą od jasnoniebieskiego dla mniejszych wartości do ciemnoniebieskiego dla większych wartości, co pozwala na szybkie dostrzeżenie różnic w ilości studentów pomiędzy poszczególnymi województwami.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Zauważono, że najwięcej studentów z Ukrainy zostało przyjętych w województwie mazowieckim, gdzie ich liczba wynosi 7097. To wynik głównie związany z faktem, że znajduje się tam najbardziej znane miasto w Polsce - stolica Warszawa. Jako największe miasto w kraju oferuje ona szeroki wybór uczelni i specjalizacji, co przyciąga wielu studentów zarówno z Polski, jak i z zagranicy.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Na drugim miejscu pod względem liczby studentów z Ukrainy jest województwo małopolskie z wynikiem 2377. W tym regionie znajduje się miasto Kraków, które jest jednym z głównych ośrodków akademickich w Polsce i atrakcyjnym miejscem do studiowania dla wielu studentów.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Trzecie miejsce zajmuje województwo dolnośląskie, gdzie przyjęto 2022 studentów z Ukrainy. Podobnie jak w województwie małopolskim, dolnośląskie ma do zaoferowania wiele renomowanych uczelni, co przyczynia się do jego atrakcyjności dla zagranicznych studentów.
+</p>
+
+```{r, echo=FALSE}
+Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa_2023_07_10 <- read_excel("dane/studenci/Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa_2023-07-10.xlsx", na =
+"0")
+
+Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa_2023_07_10 <- as.data.frame(Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa_2023_07_10)
+
+Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa_2023_07_10[,2:4][is.na(Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa_2023_07_10[,2:4]) | Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa_2023_07_10[,2:4] == "NA"] <- 0
+
+Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa_2023_07_10 <- Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa_2023_07_10[ , colSums(is.na(Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa_2023_07_10))==0] 
+
+Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa_2023_07_10 <- mutate_at(Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa_2023_07_10, vars(2:4), as.numeric)
+
+Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa <- Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa_2023_07_10 %>%
+  group_by(`Województwo`) %>%
+  summarise(Liczba_studentow = sum(`Łączna liczba studentów z Ukrainy zarejestrowanych po 2022-02-24`))
+
+wykres_slupek <- ggplot(Zestawienie_Studentow_z_Obywatelstwem_Ukrainskim_w_Podziale_na_Wojewodztwa, aes(x = Województwo, y = Liczba_studentow)) +
+  geom_bar(stat = "identity", aes(fill = Liczba_studentow)) +  
+  labs(title = "Liczba Studentów z Obywatelstwem Ukrainy w Podziale na Województwa zarejestrowanych po 24 lutym 2022 roku, stan na 10 lipca 2023 roku",
+       x = "",
+       y = "Liczba Studentów") +
+  theme_minimal() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(size = 7),  
+        plot.margin = margin(0.001, 0.001, 0.001, 0.001, "cm")) +
+  scale_fill_gradient(low = "lightblue", high = "darkblue")
+zrodlo <- "Źródło:"
+zrodlo1 <- "Dane dostarczone przez Ministerstwo Edukacji i Nauki, opublikowane na stronie dane.gov.pl,"
+zrodlo2 <- "https://dane.gov.pl/pl/dataset/2704,studenci-obywatele-ukrainy"
+odstep <- " " 
+
+wykres_slupek_1 <- ggdraw(wykres_slupek) + 
+draw_label(zrodlo, x = 0.99, y = 0.88, hjust = 1, vjust = 1,
+             fontface = 'italic', color = "black", size = 8) +
+  draw_label(zrodlo1, x = 0.99, y = 0.86, hjust = 1, vjust = 1,
+             fontface = 'italic', color = "black", size = 8) +
+  draw_label(odstep, x = 0.99, y = 0.84, hjust = 1, vjust = 1,
+             fontface = 'italic', color = "black", size = 8) +
+  draw_label(zrodlo2, x = 0.99, y = 0.82, hjust = 1, vjust = 1,
+             fontface = 'italic', color = "black", size = 8)
+
+print(wykres_slupek_1)
+
+
+```
+<p style="text-indent: 20px; text-align: justify;">
+Podsumowując, wykres słupkowy pozwala na zobrazowanie, że najwięcej studentów z Ukrainy studiuje w województwie mazowieckim, a także ujawnia kolejne najpopularniejsze regiony takie jak małopolskie i dolnośląskie, gdzie uczelnie przyjęły również znaczną liczbę studentów. Ten\ podział województw pozwala zrozumieć, jak różnorodne możliwości edukacyjne w różnych regionach Polski przyciągają studentów z Ukrainy.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Kolejnym obszarem badań dotyczących edukacji byli młodzi obywatele Ukrainy uczęszczający do polskich szkół. Przeprowadzono szczegółową analizę na podstawie arkusza o nazwie "Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_ powiaty_stan_na_19.06.2023". Dane zebrane w tym raporcie ukazują liczbę uczniów z podziałem na różne typy placówek.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Na czele zestawienia znalazły się szkoły podstawowe, które zrzeszają aż 115 783 osób. Następnie, na drugim miejscu, plasują się przedszkola z wynikiem 35 920 uczniów. Kolejno, na trzecim miejscu, znalazły się licea ogólnokształcące z liczbą 9 154 uczniów, podczas gdy technika i szkoły policealne osiągnęły prawie identyczne wyniki, odpowiednio 7 487 i 7 203 uczniów.
+</p>
+```{r, echo=FALSE}
+Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023 <- read_excel("dane/uczniowie/Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19.06.2023.xlsx", na = "0")
+
+Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023 <- as.data.frame(Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023)
+
+Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023 <- Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023[,-1]
+
+Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023 <- Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023[,-2]
+
+Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023 <- Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023[,-3]
+
+Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023 <- Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023[,-4]
+
+Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023 <- Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023[,-5]
+
+Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023 <- Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023[,-6]
+
+Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023 <- Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023[,-7]
+
+Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023[,8:9][is.na(Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023[,8:9]) | Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023[,8:9] == "NA"] <- 0
+
+Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023 <- Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023[ , colSums(is.na(Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023))==0] 
+
+Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023 <- mutate_at(Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023, vars(7:8), as.numeric) 
+
+
+Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty <- Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty_stan_na_19_06_2023 %>%
+  group_by(`Typ Podmiotu`) %>%
+  summarise(Liczba_uczniow = sum(`Liczba uczniów pobyt legalny`))
+
+wykres5 <- ggplot(Uczniowie_uchodźcy_z_Ukrainy_w_podziale_na_typy_szkół_klasy_i_powiaty, aes(x = `Typ Podmiotu`, y = Liczba_uczniow)) +
+  geom_bar(stat = "identity", aes(fill = Liczba_uczniow)) +  
+  labs(title = "Liczba Uczniów z Obywatelstwem Ukrainy od 11 kwietnia 2022 roku, stan na 19 czerwca 2023 roku",
+       x = "Typy szkół",
+       y = "") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0, hjust = 1),
+        plot.title = element_text(size = 7),  
+        plot.margin = margin(0.001, 0.001, 0.001, 0.001, "cm")) +
+  scale_fill_gradient(low = "lightgreen", high = "darkorange") +
+  coord_flip() +
+  scale_y_log10()
+zrodlo <- "Źródło:"
+zrodlo2 <- "Dane dostarczone przez Ministerstwo Edukacji i Nauki, opublikowane na stronie dane.gov.pl"
+zrodlo1 <- "https://dane.gov.pl/pl/dataset/2711,uczniowie-uchodzcy-z-ukrainy"
+odstep <- " " 
+wykres5_z_zrodlem <- ggdraw(wykres5) + 
+draw_label(zrodlo, x = 0.99, y = 0.06, hjust = 1, vjust = 1,
+             fontface = 'italic', color = "black", size = 7) +
+  draw_label(zrodlo1, x = 0.99, y = 0.04, hjust = 1, vjust = 1,
+             fontface = 'italic', color = "black", size = 7) +
+  draw_label(zrodlo2, x = 0.99, y = 0.02, hjust = 1, vjust = 1,
+             fontface = 'italic', color = "black", size = 7)
+
+print(wykres5_z_zrodlem)
+
+
+```
+<p style="text-indent: 20px; text-align: justify;">
+W analizie ilości uczniów w poszczególnych typach szkół, zauważamy znaczące zróżnicowanie pomiędzy szkołami podstawowymi i\ przedszkolami, a liczbą uczniów w liceach i technikach. Istnieją różnorodne czynniki, które mogą wpłynąć na to zjawisko. Jednym z kluczowych, wpływających na te wyniki, jest trwająca wojna, która pociąga za sobą skutki demograficzne. Mężczyźni w wieku 18 lat są wciągani do służby wojskowej, co może wpłynąć na zmniejszenie liczby uczniów w liceach i technikach, jako że muszą oni podjąć obowiązkową służbę wojskową.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Dodatkowo, kwestie związane z kontrolą granic mogą również odgrywać istotną rolę w tych statystykach. Ucieczka z kraju i ograniczenia w\ przepływie osób uniemożliwiają wielu młodym ludziom dostęp do edukacji.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Wszystkie te czynniki łącznie mogą powodować duże rozbieżności w liczbie uczniów między różnymi typami szkół.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+ Wyniki analizy ukazują, że migracja obywateli Ukrainy do Polski wywarła zauważalny wpływ na system edukacyjny. Wzrost liczby dzieci i\ młodzieży ukraińskiej na terenie Polski skutkował zwiększonym zapotrzebowaniem na miejsca w szkołach i przedszkolach. Ponadto, ze względu na różnice w systemach edukacyjnych między Polską a Ukrainą, wielu ukraińskich uczniów potrzebowało wsparcia w nauce języka polskiego i\ integracji w nowym środowisku szkolnym. Programy wsparcia dla dzieci migracyjnych musiały zostać wdrożone, aby zapewnić im odpowiednie umiejętności językowe i integrację społeczną.
+</p>
+
+## Nadanie statusu UKR 
+<p style="text-indent: 20px; text-align: justify;">
+W odpowiedzi na napaść na Ukrainę, Polska podjęła zdecydowane działania w celu zapewnienia ochrony i schronienia obywatelom tego kraju, którzy znaleźli się w trudnej sytuacji. W ramach tych działań, wprowadzono możliwość nadawania im statusu cudzoziemca UKR, co umożliwia legalny pobyt w Polsce dla tych osób.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Status cudzoziemca UKR jest specjalnym rodzajem zgody na pobyt, przyznawanym cudzoziemcom, którzy obawiają się prześladowania w\ swoim kraju ojczystym, na przykład z powodu rasy, religii, narodowości lub przekonań politycznych. Osoby te z różnych powodów nie mogą lub nie chcą korzystać z ochrony oferowanej przez swoje kraje macierzyste, dlatego poszukują schronienia w Polsce.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+W celu zbadania skali tego zjawiska, przeprowadzono szczegółowe badanie ilości wniosków o nadanie statusu cudzoziemca UKR. Dane te pozwalają lepiej zrozumieć potrzeby i sytuację obywateli Ukrainy, którzy szukają bezpieczeństwa i opieki w naszym kraju w czasie trwania wojny na ich rodzimym terytorium.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Działania te są wyrazem solidarności i współczucia wobec osób znajdujących się w trudnych okolicznościach oraz stanowią dowód na zaangażowanie w pomoc i wsparcie dla tych, którzy potrzebują ochrony i szansy na nowy początek w Polsce.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Do analizy danych użyto tabeli "STATYSTYKI_POWIAT_UKR_20230711", dostępnej w zakładce "Ukraina". Na podstawie tych danych utworzono tabelę, w której uwzględniono podział na województwa oraz rozróżnienie między liczbą wniosków złożonych przez kobiety i mężczyzn.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Aby lepiej zobrazować te dane, wykonano wykres punktowy, w którym wykorzystano kolor czerwony do oznaczenia obywatelki Ukrainy oraz kolor niebieski dla obywatela tego kraju. Na osi Y przedstawione zostały województwa, a na osi X umieszczono liczbę złożonych wniosków o\ nadanie statusu cudzoziemca UKR.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Ten wykres pozwolił na wizualne porównanie liczby wniosków między różnymi województwami oraz pokazał, czy to kobiety, czy mężczyźni stanowią większość w tym procesie. Dzięki temu, możliwe jest lepsze zrozumienie skali i rozkładu zgłoszeń o przyznanie statusu cudzoziemca UKR w Polsce.
+</p>
+```{r, echo=FALSE, include=FALSE}
+STATYSTYKI_POWIAT_UKR_20230711 <- read_excel("C:/Users/Asus/Desktop/praktyki/dane/dane stat dot wniosków o nadanie statusu cudzoziemca ukr w zw z konfliktem/STATYSTYKI_POWIAT_UKR_20230711.xlsx", na =
+"0")
+
+STATYSTYKI_POWIAT_UKR_20230711 <- as.data.frame(STATYSTYKI_POWIAT_UKR_20230711)
+
+STATYSTYKI_POWIAT_UKR_20230711[,4:66][is.na(STATYSTYKI_POWIAT_UKR_20230711[,4:66]) | STATYSTYKI_POWIAT_UKR_20230711[,4:66] == "NA"] <- 0
+
+STATYSTYKI_POWIAT_UKR_20230711 <- STATYSTYKI_POWIAT_UKR_20230711[ , colSums(is.na(STATYSTYKI_POWIAT_UKR_20230711))==0] 
+
+STATYSTYKI_POWIAT_UKR_20230711[,4:66][is.na(STATYSTYKI_POWIAT_UKR_20230711[,4:66]) | STATYSTYKI_POWIAT_UKR_20230711[,4:66] == "NA"] <- 0
+
+STATYSTYKI_POWIAT_UKR_20230711 <- mutate_at(STATYSTYKI_POWIAT_UKR_20230711, vars(4:66), as.numeric) 
+
+STATYSTYKI_WOJEWÓDZTWO_UKR_K <- STATYSTYKI_POWIAT_UKR_20230711 %>%
+  group_by(`WOJEWÓDZTWO`) %>%
+  summarise(Liczba_kobiet = sum(`KOBIET`))
+
+STATYSTYKI_WOJEWÓDZTWO_UKR_K
+
+STATYSTYKI_WOJEWÓDZTWO_UKR_M <- STATYSTYKI_POWIAT_UKR_20230711 %>%
+  group_by(`WOJEWÓDZTWO`) %>%
+  summarise(Liczba_mezczyzn = sum(`MĘŻCZYZN`))
+
+```
+
+```{r,echo=FALSE}
+wykres_punktowy_5 <- ggplot() +
+  geom_point(data = STATYSTYKI_WOJEWÓDZTWO_UKR_K, aes(x = WOJEWÓDZTWO, y = Liczba_kobiet), color = "red", size = 3) +
+  geom_point(data = STATYSTYKI_WOJEWÓDZTWO_UKR_M, aes(x = WOJEWÓDZTWO, y = Liczba_mezczyzn), color = "blue", size = 3) +
+  labs(title = "Liczba wniosków w podziale na płeć i województwo od 1958 roku do 2023 roku, stan na 11 lipca 2023 roku", x = "Województwo", y = "") +
+  theme_minimal() +
+    theme(axis.text.x = element_text(angle = 0, hjust = 1),
+        plot.title = element_text(size = 8),  
+        plot.margin = margin(0.001, 0.001, 0.001, 0.001, "cm")) +
+  coord_flip()
+zrodlo <- "Źródło:"
+zrodlo2 <- "Dane dostarczone przez Ministerstwo Cyfryzacji, opublikowane na stronie dane.gov.pl"
+zrodlo1 <- "https://dane.gov.pl/pl/dataset/2715,zarejestrowane-wnioski-o-nadanie-statusu-ukr"
+odstep <- " " 
+wykres5_z_zrodlem <- ggdraw(wykres_punktowy_5) + 
+  draw_label(zrodlo, x = 0.99, y = 0.88, hjust = 1, vjust = 1,
+             fontface = 'italic', color = "black", size = 8) +
+  draw_label(zrodlo1, x = 0.99, y = 0.86, hjust = 1, vjust = 1,
+             fontface = 'italic', color = "black", size = 8) +
+  draw_label(odstep, x = 0.99, y = 0.84, hjust = 1, vjust = 1,
+             fontface = 'italic', color = "black", size = 8) +
+  draw_label(zrodlo2, x = 0.99, y = 0.82, hjust = 1, vjust = 1,
+             fontface = 'italic', color = "black", size = 8)
+print(wykres5_z_zrodlem)
+
+```
+<p style="text-indent: 20px; text-align: justify;">
+W celu lepszego zrozumienia przedstawionego wykresu, przygotowano również tabelę podsumowującą zgromadzone dane. Na podstawie tej tabeli można zauważyć, że to kobiety zdecydowanie złożyły najwięcej wniosków w porównaniu z mężczyznami, co może być skorelowane z\ obowiązkiem służby wojskowej. Sumarycznie, liczba wniosków złożonych przez obywatelki Ukrainy wyniosła 625 055, a przez obywateli 341 575.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Najwyższą liczbę wniosków zarejestrowano w województwie mazowieckim, gdzie kobiety złożyły imponujące 131 805 wniosków, a mężczyźni 73 231. Podobny trend zaobserwowano w województwach dolnośląskim (69 758 wniosków od kobiet i 38 859 od mężczyzn) oraz śląskim (61 755 wniosków od kobiet i 33 857 od mężczyzn). Możliwe, że ta znacząca liczba wniosków jest związana z dużymi skupiskami ludności w tych regionach.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Z drugiej strony, najmniejszą ilość wniosków zanotowano w województwach podlaskim (9092 wnioski od kobiet i 5099 od mężczyzn) oraz świętokrzyskim (9765 wniosków od kobiet i 5320 od mężczyzn) - gdzie liczby te są prawie identyczne. Przyczyną takiego wyniku może być różnorodność czynników, takich jak mniejsza liczba mieszkańców w tych województwach lub specyficzne warunki społeczno-ekonomiczne.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Analiza tej tabeli dostarcza cennych informacji na temat różnic w liczbie wniosków złożonych przez kobiety i mężczyzn w poszczególnych województwach. Może ona również sugerować, że aspekty takie jak obowiązek służby wojskowej i specyfika regionu mogą mieć wpływ na ilość zgłoszeń.
+</p>
+```{r, echo=FALSE}
+
+tabela_świadczeń <- data.frame(c(STATYSTYKI_WOJEWÓDZTWO_UKR_K,STATYSTYKI_WOJEWÓDZTWO_UKR_M))
+tabela_świadczeń <- tabela_świadczeń[,-3]
+tabela_świadczeń
+
+suma_swiadczen_kobiety <- data.frame(sum(tabela_świadczeń$Liczba_kobiet))
+colnames(suma_swiadczen_kobiety) <- c("Liczba wniosków złożonych przez kobiety")
+suma_swiadczen_kobiety
+suma_swiadczen_mezczyzni <- data.frame(sum(tabela_świadczeń$Liczba_mezczyzn))
+colnames(suma_swiadczen_mezczyzni) <- c("Liczba wniosków złożonych przez mężczyzn")
+suma_swiadczen_mezczyzni
+
+```
+
+
+## Stypendia naukowe i wsparcie edukacyjne
+<p style="text-indent: 20px; text-align: justify;">
+W ramach dalszych badań skupiono się na analizie liczby stypendiów przyznanych ukraińskim studentom i uczniom przez Polskę. Stypendia stanowią istotny wskaźnik współpracy między obydwoma krajami oraz mogą mieć kluczowe znaczenie dla rozwoju edukacyjnego i akademickiego. Celem analizy jest zrozumienie zakresu i rozkładu przyznanych stypendiów.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Stypendium NAWA jest jednym z najbardziej cenionych i popularnych programów w Polsce, który skupia się na wspieraniu studentów zagranicznych kształcących się w naszym kraju oraz studentów polskich odbywających częściowe studia i pobyty studyjne za granicą. Program ten ma ogromne znaczenie dla rozwoju międzynarodowej współpracy edukacyjnej, budowania mostów między kulturami i umożliwiania studentom zdobywania wiedzy i doświadczenia na wielu poziomach.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Właśnie te stypendia, przyznane przez Narodowe Centrum Nauki (NAWA), będą stanowiły centralny punkt naszych badań. W raporcie skoncentrowano się na szczegółowej analizie przyznanych stypendiów, w tym ich wartości finansowej, liczby stypendystów oraz różnorodności kierunków studiów, które przyznają to wsparcie. Zbadano również korzyści, jakie stypendia NAWA przynoszą zarówno dla studentów, jak i dla polskich instytucji edukacyjnych, które uczestniczą w tym programie, a także wpływ na rozwijanie międzynarodowych relacji akademickich.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Analiza stypendiów NAWA będzie miała kluczowe znaczenie w ocenie skuteczności tego programu i ocenie jego pozytywnego wpływu na kształtowanie przyszłych pokoleń naukowców, ekspertów i liderów z różnych krajów. 
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Po przeprowadzeniu analizy stwierdzono, że łącznie 63 studentów z Ukrainy otrzymuje stypendium na polskich uczelniach. W celu zobrazowania tych danych, postanowiono przygotować wykres punktowy, na którym zaprezentowano 20 uczelni z największą liczbą stypendystów. Na czele zestawienia znajduje się Uniwersytet Jagielloński z liczbą 139 stypendystów, kolejno Uniwersytet Warszawski z 119 oraz Politechnika Wrocławska z 47 stypendystami. Wykres punktowy doskonale ilustruje te dane, pozwalając na szybkie zrozumienie i porównanie liczby stypendystów na różnych uczelniach.
+</p>
+```{r, echo=FALSE}
+Stypendysci_indywidualni_rok_2022 <- read_excel("C:/Users/Asus/Desktop/praktyki/dane/stypendyści NAWA/Stypendyści_indywidualni_-_rok_2022.xls", na= "0")
+Stypendysci_indywidualni_rok_2022 <- as.data.frame(Stypendysci_indywidualni_rok_2022)
+
+Stypendysci_z_ukrainy <- Stypendysci_indywidualni_rok_2022 %>%
+    filter(`Kraj obywatelstwa stypendysty` == "Ukraina") %>%
+  count(`Instytucja przyjmująca w Polsce/ delegująca z Polski`, name = "Liczba_wystapien")
+
+
+Stypendysci_z_ukrainy_20_pierwszych <- Stypendysci_indywidualni_rok_2022 %>%
+  filter(`Kraj obywatelstwa stypendysty` == "Ukraina") %>%
+  count(`Instytucja przyjmująca w Polsce/ delegująca z Polski`, name = "Liczba_wystapien") %>%
+  arrange(desc(Liczba_wystapien)) %>%
+  head(20)
+wykres_punktowy_7 <- ggplot(Stypendysci_z_ukrainy_20_pierwszych, aes(x = Liczba_wystapien, y = `Instytucja przyjmująca w Polsce/ delegująca z Polski`)) +
+  geom_point(color = "yellow", size = 3) +
+  labs(title = "Liczba stypendiów NAWA przyznanych studentom z Ukrainy (Top 20) w 2022 roku, stan na 15 marca 2023 roku",
+       x = "",
+       y = "Instytucja przyjmująca w Polsce/ delegująca z Polski") +
+  theme_minimal() +
+ theme(axis.text.y = element_text(size = 8, hjust = 0.5),
+        axis.text.x = element_text(size = 5, angle = 45, hjust = 1),
+        plot.title = element_text(size = 8),  
+        plot.margin = margin(0.001, 0.001, 0.001, 0.001, "cm")) +
+  coord_flip()
+zrodlo <- "Źródło:"
+zrodlo1 <- "Dane dostarczone przez Narodową Agencję Wymiany Akademickiej, opublikowane na stronie dane.gov.pl"
+zrodlo2 <- "https://dane.gov.pl/pl/dataset/3077,stypendysci-nawa-oraz-uczestnicy-programow-nawa-gr"
+odstep <- " " 
+wykres7_z_zrodlem <- ggdraw(wykres_punktowy_7) + 
+draw_label(zrodlo, x = 0.1, y = 0.9, hjust = 0, vjust = 1,
+             fontface = 'italic', color = "black", size = 8) +
+  draw_label(zrodlo1, x = 0.1, y = 0.88, hjust = 0, vjust = 1,
+             fontface = 'italic', color = "black", size = 8) +
+  draw_label(odstep, x = 0.1, y = 0.86, hjust = 0, vjust = 1,
+             fontface = 'italic', color = "black", size = 8) +
+  draw_label(zrodlo2, x = 0.1, y = 0.84, hjust = 0, vjust = 1,
+             fontface = 'italic', color = "black", size = 8)
+
+print(wykres7_z_zrodlem)
+
+
+```
+
+## Usługi medyczne i benefity społeczne
+<p style="text-indent: 20px; text-align: justify;">
+W odpowiedzi na wybuch wojny, Polska podjęła szereg działań mających na celu wsparcie i pomoc obywatelom Ukrainy. Jednym z tych działań było umożliwienie wystawienia refundowanych recept dla osób z Ukrainy, które legalnie przekroczyły granicę Rzeczypospolitej Polskiej po 24 lutego 2022 roku. Celem tych badań było zrozumienie skali i zakresu pomocy medycznej udzielanej uchodźcom oraz analiza ilości wydanych recept i opakowań leków. Dane znaleziono w zakładce "Ukraina" na stronie Głównego Urzędu Statystycznego. Arkusze, z których skorzystano mają nazwę: "Wniosek_leki_Ukraincy" oraz "swiadczenia_hhetwQX".
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Wyniki tych badań dostarczyły cennych informacji na temat liczby wydanych recept i ilości leków refundowanych dla obywateli Ukrainy. Dzięki temu możliwe stało się lepsze zrozumienie zapotrzebowania na opiekę medyczną wśród uchodźców oraz dostosowanie odpowiednich środków wsparcia i pomocy medycznej.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Badania wykazały, że wprowadzone działania i umożliwienie wystawiania refundowanych recept odegrało ważną rolę w zapewnieniu opieki zdrowotnej obywatelom Ukrainy, którzy znaleźli schronienie w Polsce. Ich liczba wynosi 144 378, a opakowań leków wydano aż 241 834. To\ świadczy o polskiej polityce otwartości i trosce o zdrowie uchodźców.
+</p>
+
+```{r,echo=FALSE, include=FALSE}
+Wniosek_leki_Ukraincy <- read_excel("C:/Users/Asus/Desktop/praktyki/dane/liczba zrealizowanych recept przez osoby objete specustawa na ref leki/Wniosek_leki_Ukraincy.xls", na = "0")
+
+Wniosek_leki_Ukraincy <- as.data.frame(Wniosek_leki_Ukraincy)
+
+Wniosek_leki_Ukraincy[,3:4][is.na(Wniosek_leki_Ukraincy[,3:4]) | Wniosek_leki_Ukraincy[,3:4] == "NA"] <- 0
+
+Wniosek_leki_Ukraincy <- Wniosek_leki_Ukraincy[ , colSums(is.na(Wniosek_leki_Ukraincy))==0] 
+
+Wniosek_leki_Ukraincy[,3:4][is.na(Wniosek_leki_Ukraincy[,3:4]) | Wniosek_leki_Ukraincy[,3:4] == "NA"] <- 0
+
+Wniosek_leki_Ukraincy <- mutate_at(Wniosek_leki_Ukraincy, vars(3:4), as.numeric)
+
+Wniosek_leki_Ukraincy[,3:4][is.na(Wniosek_leki_Ukraincy[,3:4]) | Wniosek_leki_Ukraincy[,3:4] == "NA"] <- 0
+
+liczba_recept <- data.frame(sum(Wniosek_leki_Ukraincy$`Liczba recept`))
+colnames(liczba_recept) <- c("Liczba wydanych recept")
+liczba_wydanych_opakowan <- data.frame(sum(Wniosek_leki_Ukraincy$`Liczba opakowan`))
+colnames(liczba_wydanych_opakowan) <- c("Liczba wydanych opakowań")
+```
+
+```{r, echo=FALSE}
+liczba_recept
+liczba_wydanych_opakowan
+```
+<p style="text-indent: 20px; text-align: justify;">
+Podsumowując, badania dotyczące liczby wydanych refundowanych recept i ilości leków dla obywateli Ukrainy były niezwykle istotne w\ kontekście pomocy medycznej udzielanej uchodźcom. Dzięki tym wynikom możliwe stało się dostosowanie odpowiednich rozwiązań, które skutecznie wspierały obywateli Ukrainy w trudnym okresie wojny i migracji.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+W kolejnym etapie badania skupiono się na analizie ilości świadczeń oraz wartości refundacji. Należy zaznaczyć, że mamy do czynienia z\ ogromną ilością danych, co dodatkowo zwiększa złożoność analizy. Szczególnie zaskakująca jest suma wartości refundacji świadczeń, która po zsumowaniu wyniosła imponującą kwotę 370 399 967.  Tak znaczący nakład środków na refundację świadczeń ukazuje, jak istotną rolę odegrały te działania w zapewnieniu niezbędnej opieki medycznej uchodźcom w okresie kryzysu. Jest to dowód na to, że Polska wykazała się wyjątkową solidarnością i gotowością do pomocy w czasie kryzysu na Ukrainie.
+</p>
+
+```{r, echo=FALSE, include=FALSE}
+swiadczenia <- read_excel("C:/Users/Asus/Desktop/praktyki/dane/liczba świadczeń i wartosci refundacji/swiadczenia_hhetwQX.xls")
+
+swiadczenia <- as.data.frame(swiadczenia)
+
+swiadczenia[,3:4][is.na(swiadczenia[,3:4]) | swiadczenia[,3:4] == "NA"] <- 0
+
+swiadczenia <- swiadczenia[ , colSums(is.na(swiadczenia))==0] 
+
+swiadczenia[,3:4][is.na(swiadczenia[,3:4]) | swiadczenia[,3:4] == "NA"] <- 0
+
+swiadczenia <- mutate_at(swiadczenia, vars(3:4), as.numeric)
+
+swiadczenia[,3:4][is.na(swiadczenia[,3:4]) | swiadczenia[,3:4] == "NA"] <- 0
+
+swiadczenia_podsumowanie <- swiadczenia %>%
+  group_by(`Nazwa rozpoznania`) %>%
+  summarise(Liczba_swiadczen = sum(`Liczba swiadczen`),
+            Wartosci_refundacji_swiadczen = sum(`Wartosc refundacji swiadczen`))
+
+colnames(swiadczenia_podsumowanie) <- c("Nazwa rozpoznania", "Liczba swiadczen", "Wartosc refundacji swiadczen")
+swiadczenia_podsumowanie <- data.frame(swiadczenia_podsumowanie)
+
+S <- data.frame(sum(swiadczenia_podsumowanie$Wartosc.refundacji.swiadczen))
+
+colnames(S) <- c("Suma wartości refundacji świadczeń")
+
+```
+
+```{r, echo=FALSE}
+S
+```
+## Podsumowanie
+<p style="text-indent: 20px; text-align: justify;">
+Raport obejmuje najważniejsze aspekty dotyczące obywateli Ukrainy. Jest to ich migracja do Polski, szczególnie po wybuchu wojny, ale i także edukacja, nadanie statusu cudzoziemcy, przyznawanie stypendiów i oferowanie im usług medycznych. Wykazuje znaczny wzrost liczby osób z\ Ukrainy przekraczających granicę z Polską, szczególnie po wybuchu wojny, osiągając niemal dziesięciokrotnie większy poziom w 2022 roku niż w\ 2020 roku. Pandemia COVID-19 miała istotny wpływ na ograniczenie ruchu granicznego w latach 2020 i 2021. Pomimo tych trudności, Polska zaoferowała wsparcie dla ukraińskich studentów, umożliwiając im kontynuowanie nauki na polskich uczelniach w trudnym okresie konfliktu, nawet na studiach medycznych (lekarskich i lekarsko-dentystycznych), które cieszą się dużym zainteresowaniem wśród studentów z Ukrainy.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Program stypendialny NAWA okazał się być dla nich szczególnie popularny, a większość stypendystów wybrała Uniwersytet Jagielloński, Uniwersytet Warszawski i Politechnikę Wrocławską. Polska również nadaje status cudzoziemca UKR ukraińskim obywatelom, którzy szukają schronienia na jej terytorium w związku z wojną.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Należy podkreślić, że zarówno wojna, jak i pandemia wywarły znaczący wpływ na wydarzenia polityczne i społeczne, co w konsekwencji wpłynęło na migrację, edukację i życie ukraińskich obywateli w Polsce. Stosunki między Polską a Ukrainą odgrywają kluczową rolę w tej dynamice, a Polska kontynuując swoje zaangażowanie w pomaganie ukraińskim studentom i uchodźcom, może nadal pełnić ważną rolę w regionie.
+</p>
+<p style="text-indent: 20px; text-align: justify;">
+Analiza danych dotyczących migracji i edukacji obywateli Ukrainy w Polsce wykazała, że napływ Ukraińców miał istotny wpływ na\ społeczeństwo i gospodarkę kraju. Był to proces wymagający adaptacji w wielu dziedzinach życia społecznego, w tym w edukacji i usługach dla\ cudzoziemców.
+</p>
